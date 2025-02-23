@@ -72,26 +72,29 @@ if st.button("Predict Loan Approval"):
 
     if st.session_state.prediction == 1:
         explanation = st.session_state.exp.as_list()
-        filtered_explanations = [(feature, importance) for feature, importance in explanation if importance < 0]
-        
+        filtered_explanations = [(feature, importance) for feature, importance in explanation if importance > 0]
+
         if filtered_explanations:
             st.subheader("How to Improve Your Loan Approval Chances")
             st.write("Your loan application was rejected due to the following reasons. Here’s how you can improve:")
             for feature, importance in filtered_explanations:
-                if "Credit History" in feature:
-                    st.write("- Try to maintain a longer credit history and avoid late payments.")
-                elif "External Risk" in feature:
+                # if "CreditHistory" in feature:
+                #     st.write("- Try to maintain a longer credit history and avoid late payments.")
+                if "ExternalRisk" in feature:
                     st.write("- Your credit risk score is low. You can improve it by paying bills on time and reducing outstanding debt.")
-                elif "Total Debt Burden" in feature:
+                if "Total_Debt_Burden" in feature:
                     st.write("- You may have too much debt compared to your income. Paying off some existing loans can increase your approval chances.")
-                elif "Inquiries" in feature:
+                if "Inq" in feature:
                     st.write("- Too many recent credit applications can be a red flag. Try to limit new credit inquiries for a few months.")
-                elif "Delinquency" in feature:
+                if "Delq" in feature:
                     st.write("- Having recent late payments or delinquencies can impact your score. Ensuring all payments are on time will help.")
             st.write("Making these changes can significantly improve your chances of getting your loan approved in the future.")
         else:
             st.write("We couldn't find specific areas needing improvement. However, maintaining good financial habits will always help your loan approval chances.")
 
+    if NoCreditHistory == 1:
+        st.subheader("Reminder")
+        st.write("You have no credit history. A guarantor/co-signer or International Credit Report or Proof of Income is required.")
 
 if "prediction" in st.session_state:
     prediction = st.session_state.prediction
@@ -99,16 +102,16 @@ if "prediction" in st.session_state:
     cluster = st.session_state.cluster
     risk_levels = {0: "Low Risk", 1: "Medium Risk", 2: "High Risk"}
     risk_category = risk_levels.get(cluster, "Unknown")
-    
+
     st.markdown(f"<h2 style='text-align: center; color: {'red' if prediction == 1 else 'green'};'>{'❌ Loan Rejected' if prediction == 1 else '✅ Loan Approved'}</h2>", unsafe_allow_html=True)
     st.write(f"**Default Probability:** {probability:.2%}")
-    
+
     st.subheader("Decision Explanation")
     st.write("Key features that influenced this decision:")
     explanation = st.session_state.exp.as_list()
     for feature, importance in explanation[:5]:
         st.write(f"- {feature}: {importance:.2f}")
-    
+
     st.subheader("What-If Analysis")
     variable_to_adjust = st.selectbox("Choose a variable to modify:", list(user_data.columns))
     new_value = st.slider(f"Adjust {variable_to_adjust}:", min_value=int(X_train[variable_to_adjust].min()), max_value=int(X_train[variable_to_adjust].max()), value=int(user_data[variable_to_adjust][0]))
@@ -119,7 +122,7 @@ if "prediction" in st.session_state:
     st.write(f"**Modified Prediction:** {'❌ Loan Rejected' if modified_prediction == 1 else '✅ Loan Approved'}")
     st.write(f"**Original Probability:** {probability:.2%}")
     st.write(f"**Modified Probability:** {modified_probability:.2%}")
-    
+
     st.subheader("Customer Profiling & Benchmarking")
     similar_customers = X_train[X_train['Cluster'] == cluster]
     approval_rate = y_train.loc[similar_customers.index].mean()[0] * 100
