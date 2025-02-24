@@ -7,12 +7,12 @@ from sklearn.cluster import KMeans
 import re
 
 # 📌 1️⃣ Load the trained loan approval model
-model = joblib.load("/Users/jiawei/Downloads/MSM_532/Heloc/best_lg.pkl")
-knn_model = joblib.load("/Users/jiawei/Downloads/MSM_532/Heloc/knn_model.pkl")
+model = joblib.load("best_lg.pkl")
+knn_model = joblib.load("knn_model.pkl")
 
 # 📌 2️⃣ Load the training data for LIME explanation and KNN profiling
-X_train = pd.read_csv("/Users/jiawei/Downloads/MSM_532/Heloc/X_train.csv")
-y_train = pd.read_csv("/Users/jiawei/Downloads/MSM_532/Heloc/y_train.csv")
+X_train = pd.read_csv("X_train.csv")
+y_train = pd.read_csv("y_train.csv")
 feature_names = X_train.columns.tolist()
 
 # 📌 3️⃣ Create LIME Explainer
@@ -100,6 +100,17 @@ if st.button("Predict Loan Approval"):
     st.session_state.exp = explainer.explain_instance(user_data.iloc[0].values, model.predict_proba, num_features=7)
     st.session_state.cluster = kmeans.predict(user_data)[0]
 
+
+if "prediction" in st.session_state:
+    prediction = st.session_state.prediction
+    probability = st.session_state.probability
+    cluster = st.session_state.cluster
+    risk_levels = {0: "Low Risk", 1: "Medium Risk", 2: "High Risk"}
+    risk_category = risk_levels.get(cluster, "Unknown")
+
+    st.markdown(f"<h2 style='text-align: center; color: {'red' if prediction == 1 else 'green'};'>{'❌ Loan Rejected' if prediction == 1 else '✅ Loan Approved'}</h2>", unsafe_allow_html=True)
+    st.write(f"**Default Probability:** {probability:.2%}")
+
     if st.session_state.prediction == 1:
         explanation = st.session_state.exp.as_list()
         sorted_explanation_values = sorted(explanation[1:],
@@ -110,7 +121,7 @@ if st.button("Predict Loan Approval"):
             for feature, _ in sorted_explanation_values
         ][:2]
         # filtered_explanations = [(feature, importance) for feature, importance in explanation if importance > 0]
-
+        print(selected_features)
         if selected_features:
             st.subheader("How to Improve Your Loan Approval Chances")
             st.write("Your loan application was rejected due to the following reasons. Here’s how you can improve:")
@@ -127,16 +138,6 @@ if st.button("Predict Loan Approval"):
     if NoCreditHistory == 1:
         st.subheader("Reminder")
         st.write("**You have no credit history.** A guarantor/co-signer or International Credit Report or Proof of Income is required.")
-
-if "prediction" in st.session_state:
-    prediction = st.session_state.prediction
-    probability = st.session_state.probability
-    cluster = st.session_state.cluster
-    risk_levels = {0: "Low Risk", 1: "Medium Risk", 2: "High Risk"}
-    risk_category = risk_levels.get(cluster, "Unknown")
-
-    st.markdown(f"<h2 style='text-align: center; color: {'red' if prediction == 1 else 'green'};'>{'❌ Loan Rejected' if prediction == 1 else '✅ Loan Approved'}</h2>", unsafe_allow_html=True)
-    st.write(f"**Default Probability:** {probability:.2%}")
 
     st.subheader("Decision Explanation")
     st.write("Key features that influenced this decision:")
