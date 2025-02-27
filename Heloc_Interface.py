@@ -8,7 +8,7 @@ import re
 
 # 📌 1️⃣ Load the trained loan approval model
 model = joblib.load("best_lg.pkl")
-knn_model = joblib.load("knn_model.pkl")
+# knn_model = joblib.load("knn_model.pkl")
 
 # 📌 2️⃣ Load the training data for LIME explanation and KNN profiling
 X_train = pd.read_csv("X_train.csv")
@@ -75,12 +75,12 @@ disable_inputs = NoCreditHistory == "No"
 def disable_if_no_credit(value):
     return 0 if disable_inputs else value
 
-AverageMInFile = st.number_input("Average account age (months) (Max: 800)", min_value=0, max_value=800, value=disable_if_no_credit(50), disabled=disable_inputs)
-ExternalRiskEstimate = st.slider("External Credit Risk Estimate (0-100) (Max: 100)", min_value=0, max_value=100, value=disable_if_no_credit(60), disabled=disable_inputs)
+AverageMInFile = st.number_input("Average account age (months) (Max: 800)", min_value=0, max_value=800, value=disable_if_no_credit(67), disabled=disable_inputs)
+ExternalRiskEstimate = st.slider("External Credit Risk Estimate (0-100) (Max: 100)", min_value=0, max_value=100, value=disable_if_no_credit(85), disabled=disable_inputs)
 NumTotalTrades = st.number_input("Total number of trades (credit history) (Max: 1000)", min_value=0, max_value=1000, value=disable_if_no_credit(10), disabled=disable_inputs)
-MSinceMostRecentDelq = st.number_input("Months since most recent delinquency (Max: 800)", min_value=0, max_value=800, value=disable_if_no_credit(12), disabled=disable_inputs)
-Total_Debt_Burden = st.slider("Total Debt Burden (0-100) (Max: 100)", min_value=0, max_value=100, value=disable_if_no_credit(30), disabled=disable_inputs)
-NumInqLast6M = st.number_input("Number of inquiries in last 6 months (Max: 500)", min_value=0, max_value=500, value=disable_if_no_credit(3), disabled=disable_inputs)
+MSinceMostRecentDelq = st.number_input("Months since most recent delinquency (Max: 800)", min_value=0, max_value=800, value=disable_if_no_credit(55), disabled=disable_inputs)
+Total_Debt_Burden = st.slider("Total Debt Burden (0-100) (Max: 100)", min_value=0, max_value=100, value=disable_if_no_credit(0), disabled=disable_inputs)
+NumInqLast6M = st.number_input("Number of inquiries in last 6 months (Max: 500)", min_value=0, max_value=500, value=disable_if_no_credit(2), disabled=disable_inputs)
 
 NoCreditHistory = 1 if NoCreditHistory == "No" else 0
 
@@ -157,10 +157,6 @@ if "prediction" in st.session_state:
     st.write(f"**Modified Probability:** {modified_probability:.2%}")
 
     st.subheader("Customer Profiling & Benchmarking")
-    similar_customers = X_train[X_train['Cluster'] == cluster]
-    approval_rate = y_train.loc[similar_customers.index].mean()[0] * 100
-    st.write(f"Your profile is similar to **{approval_rate:.2f}%** of approved applicants in your category.")
-    st.write(f"You belong to the **{risk_category}** risk category.")
     similar_customers = X_train[X_train['Cluster'] == cluster]
     approval_rate = y_train.loc[similar_customers.index].mean()[0] * 100
     st.write(f"Your profile is similar to **{approval_rate:.2f}%** of approved applicants in your category.")
